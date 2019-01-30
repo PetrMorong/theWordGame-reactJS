@@ -51,6 +51,12 @@ export const validateWord = (language, words, parsedWord) => {
 export const sortValidAndInvalidWors = newValidWords =>
   newValidWords.sort((x, y) => (x.valid === y.valid ? 0 : x.valid ? -1 : 1));
 
+export const sortBasedOnLength = newValidWords =>
+  newValidWords.sort((a, b) => {
+    if ((a.valid && !b.valid) || (!a.valid && b.valid)) return 0;
+    return b.text.length - a.text.length;
+  });
+
 export const checkIfWordIsAlreadySubmited = (validWords, parsedWord) => {
   let submited = false;
   for (let i = 0, len = validWords.length; i < len; i += 1) {
@@ -91,3 +97,6 @@ export const getUserObject = FBInstant => ({
   displayName: FBInstant.player.getName(),
   photoURL: FBInstant.player.getPhoto()
 });
+
+export const isGameRefSet = gameRoomDatabaseRef =>
+  Object.keys(gameRoomDatabaseRef).length > 0;

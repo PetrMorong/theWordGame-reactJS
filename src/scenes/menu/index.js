@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import moment from "moment";
 import CzFlag from "../../assets/cz-flag.png";
 import EnFlag from "../../assets/en-flag.png";
 import Button from "@material-ui/core/Button";
@@ -7,6 +8,7 @@ import { generateWordsRandomly, getUserObject } from "../../utils";
 import routes from "../../constants/routes";
 import * as S from "./styles";
 import Firebase from "../../firebase";
+import splash from "../../assets/splash.png";
 import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
 
 const FBInstant = window.FBInstant;
@@ -21,6 +23,10 @@ class Menu extends Component {
     this.gameRoomRef = Firebase.firestore().collection("game_room");
   }
 
+  componentWillUnmountMount() {
+    this.gameRoomRef = null;
+  }
+
   handleStartGame = () => {
     const { language } = this.state;
     this.setState({ loading: true });
@@ -28,6 +34,7 @@ class Menu extends Component {
       .where("isFull", "==", false)
       .where("language", "==", language)
       .where("waitingForAFriend", "==", false)
+      .where("leftInWaitingRoom", "==", false)
       .limit(1)
       .get()
       .then(snapshot => {
@@ -50,6 +57,9 @@ class Menu extends Component {
         playerTwo: { displayName: null, photoURL: null, uid: "" },
         isFull: false,
         waitingForAFriend: false,
+        leftInWaitingRoom: false,
+        playerOnePoints: 0,
+        playerTwoPoints: 0,
         lettersRoundOne,
         lettersRoundOneSetTwo,
         language
@@ -71,11 +81,12 @@ class Menu extends Component {
     const { language } = this.state;
     await existingGameRoom.ref.update({
       playerTwo: getUserObject(FBInstant),
-      isFull: true
+      isFull: true,
+      startedAt: moment().format()
     });
     history.push({
       pathname: routes.GAME,
-      state: { language }
+      state: { language, playerTwo: true, playerOne: false }
     });
     dispatch({
       type: SET_GAME_ROOM_DATABASE_REF,
@@ -87,6 +98,42 @@ class Menu extends Component {
 
   handleChangeLanguage = language => {
     this.setState({ language });
+  };
+
+  handlePlayWithFriend = async () => {
+    const chooseAsync = await FBInstant.context.chooseAsync();
+    const players = await FBInstant.context.getPlayersAsync();
+    const contextPlayers = players.map(player => ({
+      uid: player.getID(),
+      displayName: player.getName(),
+      photoURL: player.getPhoto()
+    }));
+    const playerToInvite = contextPlayers.find(
+      player => player.uid !== FBInstant.player.getID()
+    );
+    FBInstant.context.createAsync(playerToInvite.uid).then(function() {
+      console.log("FBInstant.context.getID()", FBInstant.context.getID());
+      // 5544332211
+    });
+    console.log("playerToInvite", playerToInvite);
+    FBInstant.updateAsync({
+      action: "CUSTOM",
+      cta: "Join The Game",
+      image: btoa(splash),
+      text: {
+        default: "Your friend invited you",
+        localizations: {
+          en_US: "Your friend invited you"
+        }
+      },
+      template: "GAME_INVITE",
+      data: { gameRoomId: "111" },
+      strategy: "IMMEDIATE",
+      notification: "NO_PUSH"
+    }).then(function() {
+      // closes the game after the update is posted.
+      console.log("here");
+    });
   };
 
   render() {
@@ -109,10 +156,11 @@ class Menu extends Component {
           Find opponent
         </Button>
         <Button
+          size="small"
           variant="text"
           disabled={loading}
           style={S.PlayWithFriendButton}
-          onClick={this.handleShareWithFriend}
+          onClick={this.handlePlayWithFriend}
         >
           Play with a friend
         </Button>

@@ -44,16 +44,18 @@ class Midle extends Component {
                     i < len;
                     i += 1
                   ) {
-                    emptyLetters[i] = <S.LetterWord empty key={i + 20} />;
+                    emptyLetters[i] = (
+                      <S.LetterWordOpponent empty key={i + 20} />
+                    );
                   }
                   return (
                     <S.WordRow key={key}>
                       {_map(_split(item.text, ""), (letter, index) => (
-                        <S.LetterWord key={index} empty={!item.valid}>
+                        <S.LetterWordOpponent key={index} empty={!item.valid}>
                           <S.LetterWordText empty={!item.valid}>
                             {letter}
                           </S.LetterWordText>
-                        </S.LetterWord>
+                        </S.LetterWordOpponent>
                       ))}
                       {emptyLetters}
                     </S.WordRow>

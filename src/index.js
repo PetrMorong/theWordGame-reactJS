@@ -15,6 +15,7 @@ const store = createStore(Reducer);
 
 window.FBInstant.initializeAsync()
   .then(function() {
+    console.log("XXXXX");
     ReactDOM.render(
       <Provider store={store}>
         <BrowserRouter>

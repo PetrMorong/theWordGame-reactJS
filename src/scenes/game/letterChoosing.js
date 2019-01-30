@@ -4,12 +4,15 @@ import _identity from "lodash/identity";
 import _split from "lodash/split";
 import _partial from "lodash/partial";
 import _debounce from "lodash/debounce";
-import AutoRenewIcon from "@material-ui/icons/Autorenew";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import NewLetters from "./newLetters";
 import * as S from "./styles";
 import {
   validateWord,
   sortValidAndInvalidWors,
-  checkIfWordIsAlreadySubmited
+  checkIfWordIsAlreadySubmited,
+  sortBasedOnLength,
+  countPoints
 } from "../../utils";
 
 const initialState = {
@@ -74,7 +77,14 @@ class LetterChoosing extends Component {
 
   handleSendClick = () => {
     const { choosenLetters } = this.state;
-    const { validWords, words, gameRoomState, setParentState } = this.props;
+    const {
+      validWords,
+      words,
+      gameRoomState,
+      setParentState,
+      gameRoomDatabaseRef,
+      amIPlayerOne
+    } = this.props;
     if (choosenLetters.length === 0) return;
     const word = _map(choosenLetters, item => _identity(item[1])).join();
     const parsedWord = _split(word, ",").join("");
@@ -84,8 +94,13 @@ class LetterChoosing extends Component {
       ...validWords,
       { text: parsedWord, valid: wordIsValid }
     ];
+    let data = {};
+    if (amIPlayerOne) data.playerOnePoints = countPoints(newValidWords);
+    if (!amIPlayerOne) data.playerTwoPoints = countPoints(newValidWords);
+    console.log(data);
+    if (wordIsValid) gameRoomDatabaseRef.update({ ...data });
     setParentState({
-      validWords: sortValidAndInvalidWors(newValidWords)
+      validWords: sortBasedOnLength(sortValidAndInvalidWors(newValidWords))
     });
     this.setState({
       choosenLetters: initialState.choosenLetters,
@@ -98,25 +113,37 @@ class LetterChoosing extends Component {
     const {
       opponentPoints,
       myPoints,
-      gameEnded,
       newWords,
       gameRoomState,
       iWon,
       isDraw,
       opponentFinished,
-      hadleGetNewWords
+      hadleGetNewWords,
+      opponentDidNotFinish
     } = this.props;
+    let { gameEnded } = this.props;
+    const someoneLeftTheGame =
+      gameRoomState.playerOneLeft || gameRoomState.playerTwoLeft;
+    if (someoneLeftTheGame) gameEnded = true;
 
     return (
       <Fragment>
-        {gameEnded && !opponentFinished && (
+        {gameEnded && someoneLeftTheGame && (
           <S.GameEndedStats>
+            <S.GameEndedStatsText>
+              Your win opponent left the game
+            </S.GameEndedStatsText>
+          </S.GameEndedStats>
+        )}
+        {gameEnded && !opponentFinished && !opponentDidNotFinish && (
+          <S.GameEndedStats>
+            <CircularProgress style={S.spinnerStyle} size={15} />
             <S.GameEndedStatsText>
               Waiting for your opponent
             </S.GameEndedStatsText>
           </S.GameEndedStats>
         )}
-        {gameEnded && opponentFinished && (
+        {gameEnded && (opponentFinished || opponentDidNotFinish) && (
           <Fragment>
             <S.ChosenLettersWrap>
               <S.EraseButton gameEnded={gameEnded} onClick={this.goHome}>
@@ -137,25 +164,10 @@ class LetterChoosing extends Component {
         {!gameEnded && (
           <Fragment>
             <S.Bottom>
-              {/*
-              <AdModalComponent
-                  handleFinishWatchingAd={handleFinishWatchingAd}
-                /> */}
-              <S.Letter
-                key={15}
-                clicked={false}
-                disabled={newWords}
-                onClick={hadleGetNewWords}
-                newWords
-                hasNewWords={newWords}
-                style={{ borderColor: newWords ? "#696969" : "#D28B11" }}
-              >
-                <S.ActualLetter
-                  style={{ color: newWords ? "#696969" : "white" }}
-                >
-                  <AutoRenewIcon style={{ marginTop: 4 }} size={25} />
-                </S.ActualLetter>
-              </S.Letter>
+              <NewLetters
+                hadleGetNewWords={hadleGetNewWords}
+                newWords={newWords}
+              />
               {_map(
                 newWords
                   ? gameRoomState.lettersRoundOne

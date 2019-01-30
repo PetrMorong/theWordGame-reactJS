@@ -8,8 +8,12 @@ export const Container = styled.div`
   justify-content: center;
   align-items: center;
 `;
-
 export const Text = styled.span`
   color: white;
   margin-bottom: 20px;
+`;
+export const BackWrap = styled.div`
+  position: absolute;
+  left: 10px;
+  top: 10px;
 `;

@@ -1,26 +1,40 @@
 import React, { Component } from "react";
-import { amIPlayerOneFunc } from "../../utils";
 import Timer from "./timer";
 import * as S from "./styles";
 
 class TopRow extends Component {
   render() {
-    const { gameRoomState, user, gameEnded, onGameEnded } = this.props;
+    const {
+      gameRoomState,
+      user,
+      gameEnded,
+      onGameEnded,
+      location,
+      amIPlayerOne
+    } = this.props;
     const { playerTwo, playerOne } = gameRoomState;
-    const amIPlayerOne = amIPlayerOneFunc(user, gameRoomState);
 
     return (
       <S.TopRow>
         <S.PlayerInfoWrap>
           <S.PlayerPhoto src={user.photoURL} />
-          <S.PlayerName>{user.displayName}</S.PlayerName>
+          <S.PlayerStats>
+            <S.PlayerName>{user.displayName}</S.PlayerName>
+          </S.PlayerStats>
         </S.PlayerInfoWrap>
-        <Timer gameEnded={gameEnded} onGameEnded={onGameEnded} />
+        <Timer
+          gameRoomState={gameRoomState}
+          gameEnded={gameEnded}
+          onGameEnded={onGameEnded}
+          location={location}
+          amIPlayerOne={amIPlayerOne}
+        />
         <S.PlayerInfoWrap>
           <S.PlayerName>
             {amIPlayerOne ? playerTwo.displayName : playerOne.displayName}
           </S.PlayerName>
           <S.PlayerPhoto
+            opponent
             source={amIPlayerOne ? playerTwo.photoURL : playerOne.photoURL}
           />
         </S.PlayerInfoWrap>

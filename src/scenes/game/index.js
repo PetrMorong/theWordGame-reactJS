@@ -4,16 +4,19 @@ import axios from "axios";
 import TopRow from "./topRow";
 import LetterChoosing from "./letterChoosing";
 import Midle from "./midle";
+import Settings from "./settings";
 import {
   dbRefUpdated,
   getUserObject,
   amIPlayerOneFunc,
   getOpponentWords,
   getOpponentFinished,
-  countPoints
+  countPoints,
+  isGameRefSet
 } from "../../utils";
 import { WORD_LIST_EN, WORD_LIST_CZ } from "../../constants";
-
+import routes from "../../constants/routes";
+import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
 import * as S from "./styles";
 
 const FBInstant = window.FBInstant;
@@ -32,6 +35,7 @@ const wordListsUrls = {
 
 class Game extends Component {
   state = {
+    opponentDidNotFinish: false,
     gameRoomState: false,
     gameStarted: false,
     gameEnded: false,
@@ -46,24 +50,30 @@ class Game extends Component {
   user = getUserObject(FBInstant);
 
   componentDidMount() {
-    const { gameRoomDatabaseRef } = this.props;
-    if (Object.keys(gameRoomDatabaseRef).length > 0)
+    const { gameRoomDatabaseRef, location } = this.props;
+    if (location.state.playerOne) {
       this.getGameRoomState(gameRoomDatabaseRef);
+    }
   }
 
   componentDidUpdate(prevProps) {
-    const { gameRoomDatabaseRef } = this.props;
-    if (dbRefUpdated(prevProps.gameRoomDatabaseRef, gameRoomDatabaseRef)) {
+    const { gameRoomDatabaseRef, location } = this.props;
+    if (
+      dbRefUpdated(prevProps.gameRoomDatabaseRef, gameRoomDatabaseRef) &&
+      location.state.playerTwo
+    ) {
       this.getGameRoomState(gameRoomDatabaseRef);
     }
   }
 
   getGameRoomState = gameRoomDatabaseRef => {
-    gameRoomDatabaseRef.onSnapshot(doc => {
-      const data = doc.data();
-      this.getWordVocabulary(data.language);
-      this.setState({ gameRoomState: data });
-    });
+    if (isGameRefSet(gameRoomDatabaseRef)) {
+      gameRoomDatabaseRef.onSnapshot(doc => {
+        const data = doc.data();
+        this.getWordVocabulary(data.language);
+        this.setState({ gameRoomState: data });
+      });
+    }
   };
 
   getWordVocabulary = async (language: string) => {
@@ -74,7 +84,8 @@ class Game extends Component {
       return;
     }
     const apiCall = await axios.get(wordListsUrls[language]);
-    this.setWords(language, JSON.parse(apiCall.data));
+    console.log("apiCall", apiCall);
+    this.setWords(language, apiCall.data);
     localStorage.setItem(lang, JSON.stringify(apiCall.data));
   };
 
@@ -96,11 +107,26 @@ class Game extends Component {
     if (!amIPlayerOne) data.roundOnePlayerTwoWords = validWords;
     this.setState({ gameEnded: true });
     gameRoomDatabaseRef.update(data);
+    this.intervalForOpponentFinish = setTimeout(() => {
+      this.setState({ opponentDidNotFinish: true });
+    }, 5000);
   };
 
   hadleGetNewWords = () => this.setState({ newWords: true });
 
   setParentState = newState => this.setState({ ...newState });
+
+  handleLeaveTheGame = () => {
+    const { gameRoomState } = this.state;
+    const { history, gameRoomDatabaseRef, dispatch } = this.props;
+    const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
+    let data = {};
+    if (amIPlayerOne) data.playerOneLeft = true;
+    if (!amIPlayerOne) data.playerTwoLeft = true;
+    gameRoomDatabaseRef.update(data);
+    dispatch({ type: SET_GAME_ROOM_DATABASE_REF, payload: {} });
+    history.push(routes.MENU);
+  };
 
   render() {
     const {
@@ -109,11 +135,13 @@ class Game extends Component {
       gameEnded,
       validWords,
       words,
-      newWords
+      newWords,
+      opponentDidNotFinish
     } = this.state;
+    const { location, gameRoomDatabaseRef } = this.props;
     let opponentPoints = 0;
     let myPoints = 0;
-    if (!gameRoomState) return <span>Loader</span>;
+    if (!gameRoomState) return <S.Container />;
     const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
     const opponentWords = getOpponentWords(amIPlayerOne, gameRoomState);
     const opponentFinished = getOpponentFinished(amIPlayerOne, gameRoomState);
@@ -123,40 +151,48 @@ class Game extends Component {
     }
     const iWon = myPoints > opponentPoints;
     const isDraw = myPoints === opponentPoints;
-
+    console.log("index game gameRoomState", gameRoomState);
     return (
-      <S.Container>
-        {gameRoomState && (
-          <Fragment>
-            <TopRow
-              onGameEnded={this.onGameEnded}
-              gameStarted={gameStarted}
-              gameEnded={gameEnded}
-              gameRoomState={gameRoomState}
-              user={getUserObject(FBInstant)}
-            />
-            <Midle
-              validWords={validWords}
-              gameEnded={validWords}
-              opponentWords={opponentWords}
-            />
-            <LetterChoosing
-              opponentPoints={opponentPoints}
-              myPoints={myPoints}
-              iWon={iWon}
-              isDraw={isDraw}
-              opponentFinished={opponentFinished}
-              validWords={validWords}
-              words={words}
-              gameEnded={gameEnded}
-              gameRoomState={gameRoomState}
-              setParentState={this.setParentState}
-              hadleGetNewWords={this.hadleGetNewWords}
-              newWords={newWords}
-            />
-          </Fragment>
-        )}
-      </S.Container>
+      <Fragment>
+        <S.Container>
+          {gameRoomState && Object.keys(gameRoomDatabaseRef).length > 0 && (
+            <Fragment>
+              <TopRow
+                onGameEnded={this.onGameEnded}
+                gameStarted={gameStarted}
+                gameEnded={gameEnded}
+                gameRoomState={gameRoomState}
+                user={getUserObject(FBInstant)}
+                location={location}
+                amIPlayerOne={amIPlayerOne}
+              />
+              <Midle
+                validWords={validWords}
+                gameEnded={validWords}
+                opponentWords={opponentWords}
+              />
+              <LetterChoosing
+                opponentPoints={opponentPoints}
+                myPoints={myPoints}
+                iWon={iWon}
+                isDraw={isDraw}
+                opponentFinished={opponentFinished}
+                validWords={validWords}
+                words={words}
+                gameEnded={gameEnded}
+                gameRoomState={gameRoomState}
+                setParentState={this.setParentState}
+                hadleGetNewWords={this.hadleGetNewWords}
+                opponentDidNotFinish={opponentDidNotFinish}
+                gameRoomDatabaseRef={gameRoomDatabaseRef}
+                newWords={newWords}
+                amIPlayerOne={amIPlayerOne}
+              />
+            </Fragment>
+          )}
+        </S.Container>
+        <Settings onLeave={this.handleLeaveTheGame} />
+      </Fragment>
     );
   }
 }
