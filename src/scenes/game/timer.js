@@ -15,21 +15,7 @@ class Timer extends React.Component {
   };
 
   componentDidMount() {
-    const { location } = this.props;
-    if (location.state.playerOne) {
-      this.onGameStarted();
-    }
-  }
-
-  componentDidUpdate(prevProps) {
-    const { gameRoomState, location } = this.props;
-    if (
-      !_get(prevProps.gameRoomState, "startedAt", false) &&
-      gameRoomState.startedAt &&
-      location.state.playerTwo
-    ) {
-      this.onGameStarted();
-    }
+    this.onGameStarted();
   }
 
   componentWillUnmount() {
@@ -55,14 +41,18 @@ class Timer extends React.Component {
 
   render() {
     const { timerValueInSeconds } = this.state;
+    let { gameEnded } = this.props;
     const {
-      gameEnded,
       gameRoomState: { playerOnePoints, playerTwoPoints },
+      gameRoomState,
       amIPlayerOne
     } = this.props;
     const last10sec = timerValueInSeconds <= 10;
     const myPoints = amIPlayerOne ? playerOnePoints : playerTwoPoints;
     const opponentPoints = !amIPlayerOne ? playerOnePoints : playerTwoPoints;
+    const someoneLeftTheGame =
+      gameRoomState.playerOneLeft || gameRoomState.playerTwoLeft;
+    if (someoneLeftTheGame) gameEnded = true;
     return (
       <S.TimerWrap>
         <S.PlayerPoints>

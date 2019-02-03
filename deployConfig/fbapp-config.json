@@ -1,9 +1,14 @@
 {
   "instant_games": {
+    "custom_update_templates": {
+      "game_inivite": {
+        "example": "I challenge you in a word football battle."
+      }
+    },
     "bot": {
-      "subscription_type": "OPT_IN_DEV"
+      "subscription_type": "OPT_IN_PUBLIC"
     },
     "orientation": "LANDSCAPE",
-    "navigation_menu_version": "NAV_FLOATING"
+    "navigation_menu_version": "NAV_BAR"
   }
 }

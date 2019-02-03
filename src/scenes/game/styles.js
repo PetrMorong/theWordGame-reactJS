@@ -218,6 +218,7 @@ export const MidleLeft = styled.div`
   margin: 8px;
   margin-top: 0px;
   border-radius: 10px;
+  height: calc(100vh - 217px);
 `;
 export const MidleRight = styled.div`
   display: flex;
@@ -226,6 +227,7 @@ export const MidleRight = styled.div`
   margin: 8px;
   margin-top: 0px;
   border-radius: 10px;
+  height: calc(100vh - 217px);
 `;
 export const MiddleRowWrap = styled.div`
   width: 100%;
@@ -248,7 +250,7 @@ export const GameEndedStatsText = styled.span`
 export const SettingsWrap = styled.div`
   background: black;
   height: 100vh;
-  width: 35px;
+  width: 43px;
   display: flex;
   align-items: start;
   justify-content: center;

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Timer from "./timer";
+import _get from "lodash/get";
 import * as S from "./styles";
 
 class TopRow extends Component {
@@ -9,7 +10,7 @@ class TopRow extends Component {
       user,
       gameEnded,
       onGameEnded,
-      location,
+      params,
       amIPlayerOne
     } = this.props;
     const { playerTwo, playerOne } = gameRoomState;
@@ -22,20 +23,22 @@ class TopRow extends Component {
             <S.PlayerName>{user.displayName}</S.PlayerName>
           </S.PlayerStats>
         </S.PlayerInfoWrap>
-        <Timer
-          gameRoomState={gameRoomState}
-          gameEnded={gameEnded}
-          onGameEnded={onGameEnded}
-          location={location}
-          amIPlayerOne={amIPlayerOne}
-        />
+        {_get(gameRoomState, "startedAt") && (
+          <Timer
+            gameRoomState={gameRoomState}
+            gameEnded={gameEnded}
+            onGameEnded={onGameEnded}
+            params={params}
+            amIPlayerOne={amIPlayerOne}
+          />
+        )}
         <S.PlayerInfoWrap>
           <S.PlayerName>
             {amIPlayerOne ? playerTwo.displayName : playerOne.displayName}
           </S.PlayerName>
           <S.PlayerPhoto
             opponent
-            source={amIPlayerOne ? playerTwo.photoURL : playerOne.photoURL}
+            src={amIPlayerOne ? playerTwo.photoURL : playerOne.photoURL}
           />
         </S.PlayerInfoWrap>
       </S.TopRow>

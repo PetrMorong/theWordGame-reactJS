@@ -14,7 +14,7 @@ import {
   sortBasedOnLength,
   countPoints
 } from "../../utils";
-
+import routes from "../../constants/routes";
 const initialState = {
   handleFinishWatchingAd: false,
   userWatchedAd: false,
@@ -97,7 +97,6 @@ class LetterChoosing extends Component {
     let data = {};
     if (amIPlayerOne) data.playerOnePoints = countPoints(newValidWords);
     if (!amIPlayerOne) data.playerTwoPoints = countPoints(newValidWords);
-    console.log(data);
     if (wordIsValid) gameRoomDatabaseRef.update({ ...data });
     setParentState({
       validWords: sortBasedOnLength(sortValidAndInvalidWors(newValidWords))
@@ -106,6 +105,11 @@ class LetterChoosing extends Component {
       choosenLetters: initialState.choosenLetters,
       clickedLetterIndexes: initialState.clickedLetterIndexes
     });
+  };
+
+  goHome = () => {
+    const { changeScene } = this.props;
+    changeScene(routes.MENU);
   };
 
   render() {
@@ -128,22 +132,19 @@ class LetterChoosing extends Component {
 
     return (
       <Fragment>
-        {gameEnded && someoneLeftTheGame && (
-          <S.GameEndedStats>
-            <S.GameEndedStatsText>
-              Your win opponent left the game
-            </S.GameEndedStatsText>
-          </S.GameEndedStats>
-        )}
-        {gameEnded && !opponentFinished && !opponentDidNotFinish && (
-          <S.GameEndedStats>
-            <CircularProgress style={S.spinnerStyle} size={15} />
-            <S.GameEndedStatsText>
-              Waiting for your opponent
-            </S.GameEndedStatsText>
-          </S.GameEndedStats>
-        )}
-        {gameEnded && (opponentFinished || opponentDidNotFinish) && (
+        {gameEnded &&
+          !opponentFinished &&
+          !opponentDidNotFinish &&
+          !someoneLeftTheGame && (
+            <S.GameEndedStats>
+              <CircularProgress style={S.spinnerStyle} size={15} />
+              <S.GameEndedStatsText>
+                Waiting for your opponent
+              </S.GameEndedStatsText>
+            </S.GameEndedStats>
+          )}
+        {((gameEnded && (opponentFinished || opponentDidNotFinish)) ||
+          someoneLeftTheGame) && (
           <Fragment>
             <S.ChosenLettersWrap>
               <S.EraseButton gameEnded={gameEnded} onClick={this.goHome}>
@@ -151,13 +152,19 @@ class LetterChoosing extends Component {
               </S.EraseButton>
             </S.ChosenLettersWrap>
             <S.GameEndedStats>
-              <S.GameEndedStatsText>
-                {isDraw
-                  ? `It is draw. Your both had ${myPoints} points.`
-                  : iWon
-                  ? `You win with ${myPoints} points. Your opponent had ${opponentPoints} points.`
-                  : `You lost with ${myPoints} points. Your opponent had ${opponentPoints} points.`}
-              </S.GameEndedStatsText>
+              {someoneLeftTheGame ? (
+                <S.GameEndedStatsText>
+                  You win opponent left the game
+                </S.GameEndedStatsText>
+              ) : (
+                <S.GameEndedStatsText>
+                  {isDraw && !opponentDidNotFinish
+                    ? `It is draw. Your both had ${myPoints} points.`
+                    : iWon
+                    ? `You win with ${myPoints} points. Your opponent had ${opponentPoints} points.`
+                    : `You lost with ${myPoints} points. Your opponent had ${opponentPoints} points.`}
+                </S.GameEndedStatsText>
+              )}
             </S.GameEndedStats>
           </Fragment>
         )}

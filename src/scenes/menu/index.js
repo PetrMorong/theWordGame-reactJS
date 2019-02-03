@@ -8,8 +8,9 @@ import { generateWordsRandomly, getUserObject } from "../../utils";
 import routes from "../../constants/routes";
 import * as S from "./styles";
 import Firebase from "../../firebase";
-import splash from "../../assets/splash.png";
+import _partial from "lodash/partial";
 import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
+import { BASE_64_FOR_SENDING_INVITES } from "../../constants";
 
 const FBInstant = window.FBInstant;
 
@@ -21,6 +22,10 @@ class Menu extends Component {
 
   componentDidMount() {
     this.gameRoomRef = Firebase.firestore().collection("game_room");
+    const entryPointData = FBInstant.getEntryPointData();
+    if (entryPointData) {
+      this.joinGameRoomBaseOnId(entryPointData.gameRoomId);
+    }
   }
 
   componentWillUnmountMount() {
@@ -46,8 +51,8 @@ class Menu extends Component {
       });
   };
 
-  createGameRoom = () => {
-    const { history, dispatch } = this.props;
+  createGameRoom = (waitingForAFriend = false) => {
+    const { changeScene, dispatch } = this.props;
     const { language } = this.state;
     const lettersRoundOne = generateWordsRandomly(language);
     const lettersRoundOneSetTwo = generateWordsRandomly(language);
@@ -56,7 +61,7 @@ class Menu extends Component {
         playerOne: getUserObject(FBInstant),
         playerTwo: { displayName: null, photoURL: null, uid: "" },
         isFull: false,
-        waitingForAFriend: false,
+        waitingForAFriend,
         leftInWaitingRoom: false,
         playerOnePoints: 0,
         playerTwoPoints: 0,
@@ -65,9 +70,10 @@ class Menu extends Component {
         language
       })
       .then(gameRoomDatabaseRef => {
-        history.push({
-          pathname: routes.WAITING_FOR_OPONENT
-        });
+        if (waitingForAFriend) {
+          this.handlePlayWithFriend(gameRoomDatabaseRef.id);
+        }
+        changeScene(routes.WAITING_FOR_OPONENT, { waitingForAFriend });
         dispatch({
           type: SET_GAME_ROOM_DATABASE_REF,
           payload: gameRoomDatabaseRef
@@ -77,17 +83,14 @@ class Menu extends Component {
   };
 
   joinGameRoom = async existingGameRoom => {
-    const { history, dispatch } = this.props;
+    const { changeScene, dispatch } = this.props;
     const { language } = this.state;
     await existingGameRoom.ref.update({
       playerTwo: getUserObject(FBInstant),
       isFull: true,
       startedAt: moment().format()
     });
-    history.push({
-      pathname: routes.GAME,
-      state: { language, playerTwo: true, playerOne: false }
-    });
+    changeScene(routes.GAME, { language, playerTwo: true, playerOne: false });
     dispatch({
       type: SET_GAME_ROOM_DATABASE_REF,
       payload: existingGameRoom.ref
@@ -100,8 +103,29 @@ class Menu extends Component {
     this.setState({ language });
   };
 
-  handlePlayWithFriend = async () => {
-    const chooseAsync = await FBInstant.context.chooseAsync();
+  handlePlayWithFriend = async gameRoomId => {
+    FBInstant.context.chooseAsync().then(() => {
+      FBInstant.updateAsync({
+        action: "CUSTOM",
+        cta: "Play",
+        text: {
+          default: "I challenge you in a word battle."
+        },
+        image: BASE_64_FOR_SENDING_INVITES,
+        template: "game_invite",
+        data: { gameRoomId },
+        strategy: "IMMEDIATE",
+        notification: "PUSH"
+      })
+        .then(() => {
+          console.log("Message was sent successfully");
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    });
+
+    /*
     const players = await FBInstant.context.getPlayersAsync();
     const contextPlayers = players.map(player => ({
       uid: player.getID(),
@@ -111,29 +135,42 @@ class Menu extends Component {
     const playerToInvite = contextPlayers.find(
       player => player.uid !== FBInstant.player.getID()
     );
+    console.log("playerToInvite");
     FBInstant.context.createAsync(playerToInvite.uid).then(function() {
       console.log("FBInstant.context.getID()", FBInstant.context.getID());
       // 5544332211
+    });*/
+
+    /*FBInstant.setSessionData({
+      playAgain: true,
+      durationInSec: 5
     });
-    console.log("playerToInvite", playerToInvite);
-    FBInstant.updateAsync({
-      action: "CUSTOM",
-      cta: "Join The Game",
-      image: btoa(splash),
-      text: {
-        default: "Your friend invited you",
-        localizations: {
-          en_US: "Your friend invited you"
-        }
-      },
-      template: "GAME_INVITE",
-      data: { gameRoomId: "111" },
-      strategy: "IMMEDIATE",
-      notification: "NO_PUSH"
-    }).then(function() {
-      // closes the game after the update is posted.
-      console.log("here");
-    });
+    FBInstant.quit();*/
+  };
+
+  joinGameRoomBaseOnId = async (id: string) => {
+    const { changeScene, dispatch } = this.props;
+    const { language } = this.state;
+    Firebase.firestore()
+      .collection("game_room")
+      .doc(id)
+      .get()
+      .then(doc => {
+        doc.ref.update({
+          playerTwo: getUserObject(FBInstant),
+          isFull: true
+        });
+        dispatch({
+          type: SET_GAME_ROOM_DATABASE_REF,
+          payload: doc.ref
+        });
+        changeScene(routes.GAME, {
+          language,
+          playerTwo: true,
+          playerOne: false,
+          joinedByInvite: true
+        });
+      });
   };
 
   render() {
@@ -144,6 +181,7 @@ class Menu extends Component {
           <S.UserImage src={FBInstant.player.getPhoto()} />
           <S.UserName>{FBInstant.player.getName()}</S.UserName>
         </S.UserWrap>
+
         <Button
           variant="contained"
           disabled={loading}
@@ -155,27 +193,29 @@ class Menu extends Component {
         >
           Find opponent
         </Button>
+
         <Button
           size="small"
           variant="text"
           disabled={loading}
           style={S.PlayWithFriendButton}
-          onClick={this.handlePlayWithFriend}
+          onClick={_partial(this.createGameRoom, true)}
         >
           Play with a friend
         </Button>
+
         <S.LanguagesWrap>
           <S.LanguageButton
             selected={language === "cz"}
             onClick={() => this.handleChangeLanguage("cz")}
           >
-            <S.LanguageButtonImage src={CzFlag} />
+            <S.LanguageButtonImage src="https://scontent-frx5-1.xx.fbcdn.net/v/t1.15752-9/51359052_769415480081198_2020457984471072768_n.png?_nc_cat=101&_nc_ht=scontent-frx5-1.xx&oh=94bb0d3dbb717877e67c260164865b6c&oe=5CEE1F4A" />
           </S.LanguageButton>
           <S.LanguageButton
             selected={language === "en"}
             onClick={() => this.handleChangeLanguage("en")}
           >
-            <S.LanguageButtonImage src={EnFlag} />
+            <S.LanguageButtonImage src="https://scontent-frx5-1.xx.fbcdn.net/v/t1.15752-9/51143367_800735913610910_4227225959410958336_n.png?_nc_cat=109&_nc_ht=scontent-frx5-1.xx&oh=b6e4c3c2f4a913b9653d873bc1d36693&oe=5CB465C6" />
           </S.LanguageButton>
         </S.LanguagesWrap>
       </S.Container>

@@ -77,8 +77,8 @@ export const getOpponentWords = (amIPlayerOne, gameRoomState) =>
 
 export const getOpponentFinished = (amIPlayerOne, gameRoomState) =>
   amIPlayerOne
-    ? _get(gameRoomState, "roundOnePlayerTwoWords", false)
-    : _get(gameRoomState, "roundOnePlayerOneWords", false);
+    ? _get(gameRoomState, "roundOnePlayerTwoWords")
+    : _get(gameRoomState, "roundOnePlayerOneWords");
 
 export const countPoints = words => {
   let points = 0;

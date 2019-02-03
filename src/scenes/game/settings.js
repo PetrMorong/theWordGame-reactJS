@@ -41,9 +41,9 @@ class Settings extends React.Component {
         <IconButton
           aria-label="Settings"
           onClick={this.handleOpenModal}
-          style={{ color: "white", opacity: 0.8 }}
+          style={{ color: "white", marginTop: 5 }}
         >
-          <ExitIcon size={5} />
+          <ExitIcon size={9} />
         </IconButton>
         <Dialog
           open={this.state.open}

@@ -11,7 +11,7 @@ const mapStateToProps = state => state;
 
 class WaitingForOponent extends Component {
   componentDidUpdate(prevProps) {
-    const { gameRoomDatabaseRef, history } = this.props;
+    const { gameRoomDatabaseRef, changeScene } = this.props;
     if (
       dbRefUpdated(prevProps.gameRoomDatabaseRef, gameRoomDatabaseRef) &&
       isGameRefSet(gameRoomDatabaseRef)
@@ -19,25 +19,22 @@ class WaitingForOponent extends Component {
       gameRoomDatabaseRef.onSnapshot(doc => {
         const data = doc.data();
         if (data.isFull && !data.playerOneLeft && !data.playerTwoLeft) {
-          history.push({
-            pathname: routes.GAME,
-            state: { playerOne: true, playerTwo: false }
-          });
+          changeScene(routes.GAME, { playerOne: true, playerTwo: false });
         }
       });
     }
   }
 
   handleBack = async () => {
-    const { gameRoomDatabaseRef, history } = this.props;
-    history.push({ pathname: routes.MENU });
+    const { gameRoomDatabaseRef, changeScene } = this.props;
+    changeScene(routes.MENU);
     await gameRoomDatabaseRef.update({
       leftInWaitingRoom: true
     });
   };
 
   render() {
-    const { waitingForAFriend } = this.props.location;
+    const { waitingForAFriend } = this.props.params;
     return (
       <S.Container>
         <S.BackWrap>
@@ -52,16 +49,9 @@ class WaitingForOponent extends Component {
         </S.BackWrap>
         <S.Text>
           {waitingForAFriend
-            ? "Share a link with you friend and wait until he joins"
+            ? "You invited a friend, when he joins the game will start"
             : "Finding a worthy opponent"}
         </S.Text>
-        {waitingForAFriend && (
-          <Button
-            mode="text"
-            onClick={this.handleShareWithFriend}
-            text="Send link to your friend"
-          />
-        )}
       </S.Container>
     );
   }

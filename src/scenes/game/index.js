@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { connect } from "react-redux";
 import axios from "axios";
+import _get from "lodash/get";
 import TopRow from "./topRow";
 import LetterChoosing from "./letterChoosing";
 import Midle from "./midle";
@@ -50,17 +51,18 @@ class Game extends Component {
   user = getUserObject(FBInstant);
 
   componentDidMount() {
-    const { gameRoomDatabaseRef, location } = this.props;
-    if (location.state.playerOne) {
+    const { gameRoomDatabaseRef, params } = this.props;
+    if (params.playerOne || _get(params, "joinedByInvite")) {
       this.getGameRoomState(gameRoomDatabaseRef);
     }
   }
 
   componentDidUpdate(prevProps) {
-    const { gameRoomDatabaseRef, location } = this.props;
+    const { gameRoomDatabaseRef, params } = this.props;
+
     if (
       dbRefUpdated(prevProps.gameRoomDatabaseRef, gameRoomDatabaseRef) &&
-      location.state.playerTwo
+      params.playerTwo
     ) {
       this.getGameRoomState(gameRoomDatabaseRef);
     }
@@ -84,7 +86,6 @@ class Game extends Component {
       return;
     }
     const apiCall = await axios.get(wordListsUrls[language]);
-    console.log("apiCall", apiCall);
     this.setWords(language, apiCall.data);
     localStorage.setItem(lang, JSON.stringify(apiCall.data));
   };
@@ -118,14 +119,14 @@ class Game extends Component {
 
   handleLeaveTheGame = () => {
     const { gameRoomState } = this.state;
-    const { history, gameRoomDatabaseRef, dispatch } = this.props;
+    const { gameRoomDatabaseRef, dispatch, changeScene } = this.props;
     const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
     let data = {};
     if (amIPlayerOne) data.playerOneLeft = true;
     if (!amIPlayerOne) data.playerTwoLeft = true;
     gameRoomDatabaseRef.update(data);
     dispatch({ type: SET_GAME_ROOM_DATABASE_REF, payload: {} });
-    history.push(routes.MENU);
+    changeScene(routes.MENU);
   };
 
   render() {
@@ -138,7 +139,7 @@ class Game extends Component {
       newWords,
       opponentDidNotFinish
     } = this.state;
-    const { location, gameRoomDatabaseRef } = this.props;
+    const { params, gameRoomDatabaseRef, changeScene } = this.props;
     let opponentPoints = 0;
     let myPoints = 0;
     if (!gameRoomState) return <S.Container />;
@@ -151,7 +152,7 @@ class Game extends Component {
     }
     const iWon = myPoints > opponentPoints;
     const isDraw = myPoints === opponentPoints;
-    console.log("index game gameRoomState", gameRoomState);
+    console.log("gameRoomState", gameRoomState);
     return (
       <Fragment>
         <S.Container>
@@ -163,7 +164,7 @@ class Game extends Component {
                 gameEnded={gameEnded}
                 gameRoomState={gameRoomState}
                 user={getUserObject(FBInstant)}
-                location={location}
+                params={params}
                 amIPlayerOne={amIPlayerOne}
               />
               <Midle
@@ -187,6 +188,7 @@ class Game extends Component {
                 gameRoomDatabaseRef={gameRoomDatabaseRef}
                 newWords={newWords}
                 amIPlayerOne={amIPlayerOne}
+                changeScene={changeScene}
               />
             </Fragment>
           )}
