@@ -1,14 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import moment from "moment";
-import CzFlag from "../../assets/cz-flag.png";
-import EnFlag from "../../assets/en-flag.png";
 import Button from "@material-ui/core/Button";
 import { generateWordsRandomly, getUserObject } from "../../utils";
 import routes from "../../constants/routes";
 import * as S from "./styles";
 import Firebase from "../../firebase";
 import _partial from "lodash/partial";
+import _get from "lodash/get";
 import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
 import { BASE_64_FOR_SENDING_INVITES } from "../../constants";
 
@@ -156,20 +155,24 @@ class Menu extends Component {
       .doc(id)
       .get()
       .then(doc => {
-        doc.ref.update({
-          playerTwo: getUserObject(FBInstant),
-          isFull: true
-        });
-        dispatch({
-          type: SET_GAME_ROOM_DATABASE_REF,
-          payload: doc.ref
-        });
-        changeScene(routes.GAME, {
-          language,
-          playerTwo: true,
-          playerOne: false,
-          joinedByInvite: true
-        });
+        const data = doc.data();
+        if (!_get(data, "startedAt", false)) {
+          doc.ref.update({
+            playerTwo: getUserObject(FBInstant),
+            isFull: true,
+            startedAt: moment().format()
+          });
+          dispatch({
+            type: SET_GAME_ROOM_DATABASE_REF,
+            payload: doc.ref
+          });
+          changeScene(routes.GAME, {
+            language,
+            playerTwo: true,
+            playerOne: false,
+            joinedByInvite: true
+          });
+        }
       });
   };
 

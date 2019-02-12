@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { connect } from "react-redux";
 import axios from "axios";
+import Moment from "moment";
 import _get from "lodash/get";
 import TopRow from "./topRow";
 import LetterChoosing from "./letterChoosing";
@@ -19,6 +20,7 @@ import { WORD_LIST_EN, WORD_LIST_CZ } from "../../constants";
 import routes from "../../constants/routes";
 import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
 import * as S from "./styles";
+import { roundTime } from "./timer";
 
 const FBInstant = window.FBInstant;
 
@@ -146,13 +148,14 @@ class Game extends Component {
     const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
     const opponentWords = getOpponentWords(amIPlayerOne, gameRoomState);
     const opponentFinished = getOpponentFinished(amIPlayerOne, gameRoomState);
-    if (gameEnded && opponentFinished) {
+    const diff = Moment().diff(Moment(gameRoomState.startedAt));
+    const timeLeft = roundTime - Math.floor(Moment.duration(diff).asSeconds());
+    if ((gameEnded || timeLeft + 5 < 0) && opponentFinished) {
       opponentPoints = countPoints(opponentWords);
       myPoints = countPoints(validWords);
     }
     const iWon = myPoints > opponentPoints;
     const isDraw = myPoints === opponentPoints;
-    console.log("gameRoomState", gameRoomState);
     return (
       <Fragment>
         <S.Container>

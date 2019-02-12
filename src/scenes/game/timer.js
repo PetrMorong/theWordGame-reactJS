@@ -2,10 +2,9 @@
 import React from "react";
 import Moment from "moment";
 import { connect } from "react-redux";
-import _get from "lodash/get";
 import * as S from "./styles";
 
-const roundTime = 120;
+export const roundTime = 120;
 
 const mapStateToProps = state => state;
 
