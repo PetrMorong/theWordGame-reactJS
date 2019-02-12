@@ -6,15 +6,18 @@ import _map from "lodash/map";
 import _keys from "lodash/keys";
 import LettersEnglish, { vowelsEnglish } from "../constants/lettersEnglish";
 import LettersCzech from "../constants/lettersCzech";
+import LettersGerman from "../constants/lettersGeman";
 
 const letters = {
   en: LettersEnglish,
-  cz: LettersCzech
+  cz: LettersCzech,
+  german: LettersGerman
 };
 
 const vowels = {
   en: vowelsEnglish,
-  cz: vowelsEnglish
+  cz: vowelsEnglish,
+  german: vowelsEnglish
 };
 
 export const generateWordsRandomly = language => {

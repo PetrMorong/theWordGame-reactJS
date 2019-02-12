@@ -40,7 +40,7 @@ export const UserName = styled.span`
 export const LanguagesWrap = styled.div`
   position: absolute;
   top: 10px;
-  right: 25px;
+  right: 80px;
   display: flex;
   flex-direction: row;
   width: 100px;

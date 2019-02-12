@@ -108,7 +108,8 @@ class LetterChoosing extends Component {
   };
 
   goHome = () => {
-    const { changeScene } = this.props;
+    const { changeScene, resetReduxDatabaseRef } = this.props;
+    resetReduxDatabaseRef();
     changeScene(routes.MENU);
   };
 
@@ -152,18 +153,50 @@ class LetterChoosing extends Component {
               </S.EraseButton>
             </S.ChosenLettersWrap>
             <S.GameEndedStats>
+              {opponentDidNotFinish && (
+                <Fragment>
+                  {isDraw && (
+                    <S.GameEndedStatsText>
+                      {`It is draw. Your both had ${myPoints} points.`}
+                    </S.GameEndedStatsText>
+                  )}
+                  {!isDraw && (
+                    <S.GameEndedStatsText>
+                      {iWon
+                        ? `You win with ${myPoints} points. Your opponent had ${opponentPoints} points.`
+                        : `You lost with ${myPoints} points. Your opponent had ${opponentPoints} points.`}
+                    </S.GameEndedStatsText>
+                  )}
+                </Fragment>
+              )}
+              {isDraw && !opponentDidNotFinish && (
+                <S.GameEndedStatsText>
+                  {`It is draw. Your both had ${myPoints} points.`}
+                </S.GameEndedStatsText>
+              )}
               {someoneLeftTheGame ? (
                 <S.GameEndedStatsText>
                   You win opponent left the game
                 </S.GameEndedStatsText>
               ) : (
-                <S.GameEndedStatsText>
-                  {isDraw && !opponentDidNotFinish
-                    ? `It is draw. Your both had ${myPoints} points.`
-                    : iWon
-                    ? `You win with ${myPoints} points. Your opponent had ${opponentPoints} points.`
-                    : `You lost with ${myPoints} points. Your opponent had ${opponentPoints} points.`}
-                </S.GameEndedStatsText>
+                <Fragment>
+                  {!opponentDidNotFinish && (
+                    <S.GameEndedStatsText>
+                      {isDraw && (
+                        <S.GameEndedStatsText>
+                          {`It is draw. Your both had ${myPoints} points.`}
+                        </S.GameEndedStatsText>
+                      )}
+                      {isDraw && (
+                        <Fragment>
+                          {iWon
+                            ? `You win with ${myPoints} points. Your opponent had ${opponentPoints} points.`
+                            : `You lost with ${myPoints} points. Your opponent had ${opponentPoints} points.`}
+                        </Fragment>
+                      )}
+                    </S.GameEndedStatsText>
+                  )}
+                </Fragment>
               )}
             </S.GameEndedStats>
           </Fragment>
@@ -205,7 +238,9 @@ class LetterChoosing extends Component {
                   </S.ChosenLetters>
                 </S.ChosenLettersContainer>
               )}
-              <S.SendButton onClick={this.handleSendClick}>
+              <S.SendButton
+                onClick={gameEnded ? this.goHome : this.handleSendClick}
+              >
                 <S.EraseButtonText>
                   {gameEnded ? "GO BACK TO MENU" : "SEND"}
                 </S.EraseButtonText>

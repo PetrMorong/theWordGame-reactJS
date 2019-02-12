@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { connect } from "react-redux";
 import axios from "axios";
+import Moment from "moment";
 import _get from "lodash/get";
 import TopRow from "./topRow";
 import LetterChoosing from "./letterChoosing";
@@ -15,10 +16,11 @@ import {
   countPoints,
   isGameRefSet
 } from "../../utils";
-import { WORD_LIST_EN, WORD_LIST_CZ } from "../../constants";
+import { WORD_LIST_EN, WORD_LIST_CZ, WORD_LIST_GERMAN } from "../../constants";
 import routes from "../../constants/routes";
 import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
 import * as S from "./styles";
+import { roundTime } from "./timer";
 
 const FBInstant = window.FBInstant;
 
@@ -26,12 +28,14 @@ const mapStateToProps = state => state;
 
 const wordsAlises = {
   cz: "czechhWords",
-  en: "englishWords"
+  en: "englishWords",
+  german: "germanWords"
 };
 
 const wordListsUrls = {
   cz: WORD_LIST_CZ,
-  en: WORD_LIST_EN
+  en: WORD_LIST_EN,
+  german: WORD_LIST_GERMAN
 };
 
 class Game extends Component {
@@ -44,7 +48,8 @@ class Game extends Component {
     validWords: [],
     words: {
       cz: [],
-      en: []
+      en: [],
+      german: []
     }
   };
 
@@ -59,7 +64,6 @@ class Game extends Component {
 
   componentDidUpdate(prevProps) {
     const { gameRoomDatabaseRef, params } = this.props;
-
     if (
       dbRefUpdated(prevProps.gameRoomDatabaseRef, gameRoomDatabaseRef) &&
       params.playerTwo
@@ -119,14 +123,19 @@ class Game extends Component {
 
   handleLeaveTheGame = () => {
     const { gameRoomState } = this.state;
-    const { gameRoomDatabaseRef, dispatch, changeScene } = this.props;
+    const { gameRoomDatabaseRef, changeScene } = this.props;
     const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
     let data = {};
     if (amIPlayerOne) data.playerOneLeft = true;
     if (!amIPlayerOne) data.playerTwoLeft = true;
     gameRoomDatabaseRef.update(data);
-    dispatch({ type: SET_GAME_ROOM_DATABASE_REF, payload: {} });
+    this.resetReduxDatabaseRef();
     changeScene(routes.MENU);
+  };
+
+  resetReduxDatabaseRef = () => {
+    const { dispatch } = this.props;
+    dispatch({ type: SET_GAME_ROOM_DATABASE_REF, payload: {} });
   };
 
   render() {
@@ -146,13 +155,17 @@ class Game extends Component {
     const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
     const opponentWords = getOpponentWords(amIPlayerOne, gameRoomState);
     const opponentFinished = getOpponentFinished(amIPlayerOne, gameRoomState);
-    if (gameEnded && opponentFinished) {
+    const diff = Moment().diff(Moment(gameRoomState.startedAt));
+    const timeLeft = roundTime - Math.floor(Moment.duration(diff).asSeconds());
+    if (
+      (gameEnded || timeLeft + 5 < 0) &&
+      (opponentFinished || opponentDidNotFinish)
+    ) {
       opponentPoints = countPoints(opponentWords);
       myPoints = countPoints(validWords);
     }
     const iWon = myPoints > opponentPoints;
     const isDraw = myPoints === opponentPoints;
-    console.log("gameRoomState", gameRoomState);
     return (
       <Fragment>
         <S.Container>
@@ -169,7 +182,7 @@ class Game extends Component {
               />
               <Midle
                 validWords={validWords}
-                gameEnded={validWords}
+                gameEnded={gameEnded}
                 opponentWords={opponentWords}
               />
               <LetterChoosing
@@ -189,6 +202,7 @@ class Game extends Component {
                 newWords={newWords}
                 amIPlayerOne={amIPlayerOne}
                 changeScene={changeScene}
+                resetReduxDatabaseRef={this.resetReduxDatabaseRef}
               />
             </Fragment>
           )}

@@ -5,11 +5,29 @@ import BackIcon from "@material-ui/icons/ArrowBackIos";
 
 import routes from "../../constants/routes";
 import { dbRefUpdated, isGameRefSet } from "../../utils";
+import {
+  preloadAdRedux,
+  SET_GAME_ROOM_DATABASE_REF
+} from "../../redux/reducer";
 import * as S from "./styles";
 
 const mapStateToProps = state => state;
 
 class WaitingForOponent extends Component {
+  preloadedInterstitial = null;
+
+  componentDidMount() {
+    this.showAd();
+  }
+
+  showAd = async () => {
+    const { preloadedInterstitial, dispatch } = this.props;
+    if (preloadedInterstitial) {
+      await preloadedInterstitial.showAsync();
+      dispatch(preloadAdRedux());
+    }
+  };
+
   componentDidUpdate(prevProps) {
     const { gameRoomDatabaseRef, changeScene } = this.props;
     if (
@@ -26,8 +44,9 @@ class WaitingForOponent extends Component {
   }
 
   handleBack = async () => {
-    const { gameRoomDatabaseRef, changeScene } = this.props;
+    const { gameRoomDatabaseRef, changeScene, dispatch } = this.props;
     changeScene(routes.MENU);
+    dispatch({ type: SET_GAME_ROOM_DATABASE_REF, payload: {} });
     await gameRoomDatabaseRef.update({
       leftInWaitingRoom: true
     });

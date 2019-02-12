@@ -1,7 +1,9 @@
 import React, { Fragment } from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { createStore } from "redux";
+import { createStore, applyMiddleware } from "redux";
+import thunk from "redux-thunk";
+
 import routes from "./constants/routes";
 import Menu from "./scenes/menu";
 import Game from "./scenes/game";
@@ -9,7 +11,7 @@ import WaitingForOponent from "./scenes/waitingForOponent";
 import * as serviceWorker from "./serviceWorker";
 import Reducer from "./redux/reducer";
 
-const store = createStore(Reducer);
+const store = createStore(Reducer, applyMiddleware(thunk));
 
 const FBInstant = window.FBInstant;
 
@@ -32,11 +34,12 @@ FBInstant.initializeAsync()
 class CustomRouter extends React.Component {
   state = {
     scene: routes.MENU,
-    params: {}
+    params: { prevScene: false }
   };
 
   changeScene = (scene, params = {}) => {
-    this.setState({ scene, params });
+    const prevScene = this.state.scene;
+    this.setState({ scene, params: { ...params, prevScene } });
   };
 
   render() {

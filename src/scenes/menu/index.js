@@ -1,16 +1,22 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import moment from "moment";
-import CzFlag from "../../assets/cz-flag.png";
-import EnFlag from "../../assets/en-flag.png";
 import Button from "@material-ui/core/Button";
 import { generateWordsRandomly, getUserObject } from "../../utils";
 import routes from "../../constants/routes";
 import * as S from "./styles";
 import Firebase from "../../firebase";
 import _partial from "lodash/partial";
-import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
-import { BASE_64_FOR_SENDING_INVITES } from "../../constants";
+import _get from "lodash/get";
+import {
+  SET_GAME_ROOM_DATABASE_REF,
+  preloadAdRedux
+} from "../../redux/reducer";
+import {
+  BASE_64_FOR_SENDING_INVITES,
+  FB_AD_TYPE_GAME_STARTED_INTERESTIAL,
+  FB_AD_TYPE_GAME_ENDED_INTERESTIAL
+} from "../../constants";
 
 const FBInstant = window.FBInstant;
 
@@ -21,16 +27,35 @@ class Menu extends Component {
   };
 
   componentDidMount() {
+    const { params } = this.props;
     this.gameRoomRef = Firebase.firestore().collection("game_room");
     const entryPointData = FBInstant.getEntryPointData();
     if (entryPointData) {
       this.joinGameRoomBaseOnId(entryPointData.gameRoomId);
+    }
+    if (params.prevScene === routes.GAME) {
+      this.showAd();
+    } else {
+      this.preloadAd();
     }
   }
 
   componentWillUnmountMount() {
     this.gameRoomRef = null;
   }
+
+  showAd = async () => {
+    const { preloadedInterstitial, dispatch } = this.props;
+    if (preloadedInterstitial) {
+      await preloadedInterstitial.showAsync();
+      dispatch(preloadAdRedux(FB_AD_TYPE_GAME_ENDED_INTERESTIAL));
+    }
+  };
+
+  preloadAd = async () => {
+    const { dispatch } = this.props;
+    dispatch(preloadAdRedux(FB_AD_TYPE_GAME_STARTED_INTERESTIAL));
+  };
 
   handleStartGame = () => {
     const { language } = this.state;
@@ -156,20 +181,24 @@ class Menu extends Component {
       .doc(id)
       .get()
       .then(doc => {
-        doc.ref.update({
-          playerTwo: getUserObject(FBInstant),
-          isFull: true
-        });
-        dispatch({
-          type: SET_GAME_ROOM_DATABASE_REF,
-          payload: doc.ref
-        });
-        changeScene(routes.GAME, {
-          language,
-          playerTwo: true,
-          playerOne: false,
-          joinedByInvite: true
-        });
+        const data = doc.data();
+        if (!_get(data, "startedAt", false)) {
+          doc.ref.update({
+            playerTwo: getUserObject(FBInstant),
+            isFull: true,
+            startedAt: moment().format()
+          });
+          dispatch({
+            type: SET_GAME_ROOM_DATABASE_REF,
+            payload: doc.ref
+          });
+          changeScene(routes.GAME, {
+            language,
+            playerTwo: true,
+            playerOne: false,
+            joinedByInvite: true
+          });
+        }
       });
   };
 
@@ -216,6 +245,12 @@ class Menu extends Component {
             onClick={() => this.handleChangeLanguage("en")}
           >
             <S.LanguageButtonImage src="https://scontent-frx5-1.xx.fbcdn.net/v/t1.15752-9/51143367_800735913610910_4227225959410958336_n.png?_nc_cat=109&_nc_ht=scontent-frx5-1.xx&oh=b6e4c3c2f4a913b9653d873bc1d36693&oe=5CB465C6" />
+          </S.LanguageButton>
+          <S.LanguageButton
+            selected={language === "german"}
+            onClick={() => this.handleChangeLanguage("german")}
+          >
+            <S.LanguageButtonImage src="https://scontent.fprg1-1.fna.fbcdn.net/v/t1.15752-9/52126748_571784826621671_7645004059887271936_n.png?_nc_cat=103&_nc_ht=scontent.fprg1-1.fna&oh=f95704dca8153632f3812f4245097e1e&oe=5CDFFE72" />
           </S.LanguageButton>
         </S.LanguagesWrap>
       </S.Container>

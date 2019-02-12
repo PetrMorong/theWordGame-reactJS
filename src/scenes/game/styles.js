@@ -219,6 +219,7 @@ export const MidleLeft = styled.div`
   margin-top: 0px;
   border-radius: 10px;
   height: calc(100vh - 217px);
+  overflow: hidden;
 `;
 export const MidleRight = styled.div`
   display: flex;
@@ -228,10 +229,15 @@ export const MidleRight = styled.div`
   margin-top: 0px;
   border-radius: 10px;
   height: calc(100vh - 217px);
+  overflow: hidden;
 `;
 export const MiddleRowWrap = styled.div`
+  margin-right: -17px;
   width: 100%;
-  overflow: scroll;
+  height: 100%;
+  overflow-y: scroll;
+  padding-right: 17px;
+  box-sizing: content-box;
 `;
 export const GameEndedStats = styled.div`
   background: #233454;
