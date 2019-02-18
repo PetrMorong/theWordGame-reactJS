@@ -3,8 +3,21 @@ import styled from "styled-components";
 export const spinnerStyle = { color: "white", marginRight: 13 };
 
 export const Container = styled.div`
-  background: #1e2942;
-  width: 100%;
+  background: url("https://scontent.fprg1-1.fna.fbcdn.net/v/t1.15752-9/52634634_636609293461835_6599293790916182016_n.jpg?_nc_cat=102&_nc_ht=scontent.fprg1-1.fna&oh=a5e5d6ff9eedb614f9de02f40a6977cb&oe=5CE90610");
+  background-size: cover;
+  background-position: -35px 0;
+  background-position: -1px -70px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+`;
+export const BackgroundOverlay = styled.div`
+  background: rgba(0, 0, 0, 0.2);
+  width: calc(100vw - 43px);
   height: 100vh;
   position: relative;
   display: flex;
@@ -17,7 +30,7 @@ export const PlayerPhoto = styled.img`
   margin: 0 10px;
   margin-right: 0px;
   border: ${({ opponent }) =>
-    opponent ? "3px solid #D28B11" : "3px solid #8ab618"};
+    opponent ? "3px solid #D28B11" : "3px solid #1E88E5"};
   z-index: 3;
 `;
 export const TopRow = styled.div`
@@ -42,7 +55,7 @@ export const PlayerName = styled.span`
 `;
 export const TimerWrap = styled.div`
   display: flex;
-  background: #233454;
+  background: rgba(255, 255, 255, 0.5);
   height: 75px;
   width: 110px;
   margin-top: -10px;
@@ -50,19 +63,19 @@ export const TimerWrap = styled.div`
   align-items: center;
   flex-direction: column;
   position: absolute;
-  left: calc(100% / 2 - 60px);
+  left: calc(100% / 2 - 56px);
   top: 0;
   border-bottom-left-radius: 7px;
   border-bottom-right-radius: 7px;
 `;
 export const TimerText = styled.span`
   margin-top: 5px;
-  color: ${({ last10sec }) => (last10sec ? "red" : "#04cbf4")};
+  color: ${({ last10sec }) => (last10sec ? "red" : "black ")};
   font-weight: 400;
   font-size: 12px;
 `;
 export const Bottom = styled.div`
-  background: #233454;
+  background: rgba(255, 255, 255, 0.5);
   height: 65px;
   display: flex;
   flex-direction: row;
@@ -75,8 +88,10 @@ export const Letter = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 15px;
+  background: ${({ newWords, hasNewWords }) =>
+    newWords ? (hasNewWords ? "#696969" : "#D28B11") : "#1E88E5"};
   border: ${({ newWords }) =>
-    newWords ? "2px solid #D28B11" : "2px solid #8ab618"};
+    newWords ? "2px solid #D28B11" : "2px solid #1E88E5"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,19 +105,25 @@ export const ActualLetter = styled.span`
   font-weight: 500;
   font-size: 17px;
   color: white;
+  color: ${({ hasNewWords }) =>
+    hasNewWords ? "rgba(255, 255, 255, .6)" : "white"};
 `;
 export const WordRow = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-bottom: 8px;
-  padding: 0 10px;
+  background: #aea9a8;
+  padding: 5px 5px;
+  margin: 0 10px;
+  border-radius: 4px;
+  margin-bottom: 6px;
 `;
 export const LetterWordOpponent = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 5px;
-  border: 1px solid ${({ empty }) => (empty ? "#3b3c45" : "#D28B11")};
+  border: 1px solid ${({ empty }) => (empty ? "#7b7b7b" : "D28B11")};
+  background: ${({ empty }) => (empty ? "transparent" : "#D28B11")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,7 +132,8 @@ export const LetterWord = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 5px;
-  border: 1px solid ${({ empty }) => (empty ? "#3b3c45" : "#8ab618")};
+  background: ${({ empty }) => (empty ? "transparent" : "#1E88E5")};
+  border: 1px solid ${({ empty }) => (empty ? "#7b7b7b" : "#1E88E5")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,7 +145,7 @@ export const LetterWordIncative = styled.div`
   border: 1px solid #3b3c45;
 `;
 export const LetterWordText = styled.span`
-  color: ${({ empty }) => (empty ? "rgba(255,255,255,.3)" : "white")};
+  color: white;
   font-size: 10px;
 `;
 export const ChosenLettersWrap = styled.div`
@@ -136,7 +158,7 @@ export const ChosenLettersWrap = styled.div`
   flex-direction: row;
 `;
 export const ChosenLettersContainer = styled.div`
-  background: rgba(138, 182, 24, 0.85);
+  background: #1e88e5;
   border-radius: 20px;
   padding: 13px 15px;
   padding-right: 8px;
@@ -214,27 +236,33 @@ export const Midle = styled.div`
 export const MidleLeft = styled.div`
   display: flex;
   flex: 1;
-  background: #23232f;
+  background: rgba(255, 255, 255, 0.35);
   margin: 8px;
   margin-top: 0px;
   border-radius: 10px;
   height: calc(100vh - 217px);
+  overflow: hidden;
 `;
 export const MidleRight = styled.div`
   display: flex;
   flex: 1;
-  background: #23232f;
+  background: rgba(255, 255, 255, 0.35);
   margin: 8px;
   margin-top: 0px;
   border-radius: 10px;
   height: calc(100vh - 217px);
+  overflow: hidden;
 `;
 export const MiddleRowWrap = styled.div`
+  margin-right: -17px;
   width: 100%;
-  overflow: scroll;
+  height: 100%;
+  overflow-y: scroll;
+  padding-right: 17px;
+  box-sizing: content-box;
 `;
 export const GameEndedStats = styled.div`
-  background: #233454;
+  background: rgba(255, 255, 255, 0.5);
   height: 65px;
   margin-top: 45px;
   display: flex;
@@ -253,7 +281,8 @@ export const SettingsWrap = styled.div`
   width: 43px;
   display: flex;
   align-items: start;
-  justify-content: center;
+  justify-content: flex-start;
+  flex-direction: column;
 `;
 export const PlayerStats = styled.div`
   display: flex;
@@ -261,7 +290,7 @@ export const PlayerStats = styled.div`
   margin-bottom: 7px;
 `;
 export const PlayerPoints = styled.div`
-  color: white;
+  color: black;
   text-align: center;
   font-size: 20px;
   margin-top: 13px;

@@ -14,7 +14,6 @@ class TopRow extends Component {
       amIPlayerOne
     } = this.props;
     const { playerTwo, playerOne } = gameRoomState;
-    console.log("_get(gameRoomState, )", _get(gameRoomState, "startedAt"));
     return (
       <S.TopRow>
         <S.PlayerInfoWrap>

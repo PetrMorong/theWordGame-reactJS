@@ -2,6 +2,7 @@ import React, { Component, Fragment } from "react";
 import { connect } from "react-redux";
 import axios from "axios";
 import Moment from "moment";
+
 import _get from "lodash/get";
 import TopRow from "./topRow";
 import LetterChoosing from "./letterChoosing";
@@ -16,7 +17,7 @@ import {
   countPoints,
   isGameRefSet
 } from "../../utils";
-import { WORD_LIST_EN, WORD_LIST_CZ } from "../../constants";
+import { WORD_LIST_EN, WORD_LIST_CZ, WORD_LIST_GERMAN } from "../../constants";
 import routes from "../../constants/routes";
 import { SET_GAME_ROOM_DATABASE_REF } from "../../redux/reducer";
 import * as S from "./styles";
@@ -28,12 +29,14 @@ const mapStateToProps = state => state;
 
 const wordsAlises = {
   cz: "czechhWords",
-  en: "englishWords"
+  en: "englishWords",
+  german: "germanWords"
 };
 
 const wordListsUrls = {
   cz: WORD_LIST_CZ,
-  en: WORD_LIST_EN
+  en: WORD_LIST_EN,
+  german: WORD_LIST_GERMAN
 };
 
 class Game extends Component {
@@ -46,7 +49,8 @@ class Game extends Component {
     validWords: [],
     words: {
       cz: [],
-      en: []
+      en: [],
+      german: []
     }
   };
 
@@ -61,7 +65,6 @@ class Game extends Component {
 
   componentDidUpdate(prevProps) {
     const { gameRoomDatabaseRef, params } = this.props;
-
     if (
       dbRefUpdated(prevProps.gameRoomDatabaseRef, gameRoomDatabaseRef) &&
       params.playerTwo
@@ -121,14 +124,19 @@ class Game extends Component {
 
   handleLeaveTheGame = () => {
     const { gameRoomState } = this.state;
-    const { gameRoomDatabaseRef, dispatch, changeScene } = this.props;
+    const { gameRoomDatabaseRef, changeScene } = this.props;
     const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
     let data = {};
     if (amIPlayerOne) data.playerOneLeft = true;
     if (!amIPlayerOne) data.playerTwoLeft = true;
     gameRoomDatabaseRef.update(data);
-    dispatch({ type: SET_GAME_ROOM_DATABASE_REF, payload: {} });
+    this.resetReduxDatabaseRef();
     changeScene(routes.MENU);
+  };
+
+  resetReduxDatabaseRef = () => {
+    const { dispatch } = this.props;
+    dispatch({ type: SET_GAME_ROOM_DATABASE_REF, payload: {} });
   };
 
   render() {
@@ -144,13 +152,21 @@ class Game extends Component {
     const { params, gameRoomDatabaseRef, changeScene } = this.props;
     let opponentPoints = 0;
     let myPoints = 0;
-    if (!gameRoomState) return <S.Container />;
+    if (!gameRoomState)
+      return (
+        <S.Container>
+          <S.BackgroundOverlay />
+        </S.Container>
+      );
     const amIPlayerOne = amIPlayerOneFunc(this.user, gameRoomState.playerOne);
     const opponentWords = getOpponentWords(amIPlayerOne, gameRoomState);
     const opponentFinished = getOpponentFinished(amIPlayerOne, gameRoomState);
     const diff = Moment().diff(Moment(gameRoomState.startedAt));
     const timeLeft = roundTime - Math.floor(Moment.duration(diff).asSeconds());
-    if ((gameEnded || timeLeft + 5 < 0) && opponentFinished) {
+    if (
+      (gameEnded || timeLeft + 5 < 0) &&
+      (opponentFinished || opponentDidNotFinish)
+    ) {
       opponentPoints = countPoints(opponentWords);
       myPoints = countPoints(validWords);
     }
@@ -159,42 +175,45 @@ class Game extends Component {
     return (
       <Fragment>
         <S.Container>
-          {gameRoomState && Object.keys(gameRoomDatabaseRef).length > 0 && (
-            <Fragment>
-              <TopRow
-                onGameEnded={this.onGameEnded}
-                gameStarted={gameStarted}
-                gameEnded={gameEnded}
-                gameRoomState={gameRoomState}
-                user={getUserObject(FBInstant)}
-                params={params}
-                amIPlayerOne={amIPlayerOne}
-              />
-              <Midle
-                validWords={validWords}
-                gameEnded={validWords}
-                opponentWords={opponentWords}
-              />
-              <LetterChoosing
-                opponentPoints={opponentPoints}
-                myPoints={myPoints}
-                iWon={iWon}
-                isDraw={isDraw}
-                opponentFinished={opponentFinished}
-                validWords={validWords}
-                words={words}
-                gameEnded={gameEnded}
-                gameRoomState={gameRoomState}
-                setParentState={this.setParentState}
-                hadleGetNewWords={this.hadleGetNewWords}
-                opponentDidNotFinish={opponentDidNotFinish}
-                gameRoomDatabaseRef={gameRoomDatabaseRef}
-                newWords={newWords}
-                amIPlayerOne={amIPlayerOne}
-                changeScene={changeScene}
-              />
-            </Fragment>
-          )}
+          <S.BackgroundOverlay>
+            {gameRoomState && Object.keys(gameRoomDatabaseRef).length > 0 && (
+              <Fragment>
+                <TopRow
+                  onGameEnded={this.onGameEnded}
+                  gameStarted={gameStarted}
+                  gameEnded={gameEnded}
+                  gameRoomState={gameRoomState}
+                  user={getUserObject(FBInstant)}
+                  params={params}
+                  amIPlayerOne={amIPlayerOne}
+                />
+                <Midle
+                  validWords={validWords}
+                  gameEnded={gameEnded}
+                  opponentWords={opponentWords}
+                />
+                <LetterChoosing
+                  opponentPoints={opponentPoints}
+                  myPoints={myPoints}
+                  iWon={iWon}
+                  isDraw={isDraw}
+                  opponentFinished={opponentFinished}
+                  validWords={validWords}
+                  words={words}
+                  gameEnded={gameEnded}
+                  gameRoomState={gameRoomState}
+                  setParentState={this.setParentState}
+                  hadleGetNewWords={this.hadleGetNewWords}
+                  opponentDidNotFinish={opponentDidNotFinish}
+                  gameRoomDatabaseRef={gameRoomDatabaseRef}
+                  newWords={newWords}
+                  amIPlayerOne={amIPlayerOne}
+                  changeScene={changeScene}
+                  resetReduxDatabaseRef={this.resetReduxDatabaseRef}
+                />
+              </Fragment>
+            )}
+          </S.BackgroundOverlay>
         </S.Container>
         <Settings onLeave={this.handleLeaveTheGame} />
       </Fragment>

@@ -7,7 +7,9 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import ExitIcon from "@material-ui/icons/ExitToApp";
+import ExitIcon from "@material-ui/icons/PauseCircleFilled";
+import VolumeOffIcon from "@material-ui/icons/VolumeOff";
+import VolumeOnIcon from "@material-ui/icons/VolumeUp";
 import Slide from "@material-ui/core/Slide";
 
 import * as S from "./styles";
@@ -18,7 +20,8 @@ function Transition(props) {
 
 class Settings extends React.Component {
   state = {
-    open: false
+    open: false,
+    muted: false
   };
 
   handleOpenModal = () => {
@@ -35,7 +38,18 @@ class Settings extends React.Component {
     this.setState({ open: false });
   };
 
+  handleMute = () => {
+    const { muted } = this.state;
+    const newMutedState = !muted;
+    window.whistleSound.mute(newMutedState);
+    window.wordClickedSound.mute(newMutedState);
+    window.gameSound.mute(newMutedState);
+    window.clapSound.mute(newMutedState);
+    this.setState({ muted: !muted });
+  };
+
   render() {
+    const { muted } = this.state;
     return (
       <S.SettingsWrap>
         <IconButton
@@ -43,7 +57,14 @@ class Settings extends React.Component {
           onClick={this.handleOpenModal}
           style={{ color: "white", marginTop: 5 }}
         >
-          <ExitIcon size={9} />
+          <ExitIcon size={15} />
+        </IconButton>
+        <IconButton
+          aria-label="Mute"
+          onClick={this.handleMute}
+          style={{ color: "white", marginTop: 5 }}
+        >
+          {muted ? <VolumeOnIcon size={16} /> : <VolumeOffIcon size={15} />}
         </IconButton>
         <Dialog
           open={this.state.open}

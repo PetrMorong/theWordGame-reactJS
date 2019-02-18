@@ -48,7 +48,7 @@ class NewLetters extends React.Component {
           hasNewWords={newWords}
           style={{ borderColor: newWords ? "#696969" : "#D28B11" }}
         >
-          <S.ActualLetter style={{ color: newWords ? "#696969" : "white" }}>
+          <S.ActualLetter hasNewWords={newWords}>
             <AutoRenewIcon style={{ marginTop: 4 }} size={25} />
           </S.ActualLetter>
         </S.Letter>
