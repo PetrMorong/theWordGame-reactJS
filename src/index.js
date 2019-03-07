@@ -17,25 +17,23 @@ const store = createStore(Reducer, applyMiddleware(thunk));
 const FBInstant = window.FBInstant;
 
 window.gameSound = new Howl({
-  src:
-    "https://cdn.fbsbx.com/v/t59.3654-21/50346163_2462301250465505_2730688757383561216_n.mp4/audioclip-1550410955-18562.mp4?_nc_cat=102&_nc_ht=cdn.fbsbx.com&oh=b5e79f4a663ac1b30796b96412117536&oe=5C6C80A8&dl=1&fbclid=IwAR3rYyLjJ0P2F4WBSjNO_vdJd8s-B_-EKFya74btxNE2cpdu41MC3CLmhFY",
+  src: require("./assets/gameSound.mp4"),
   loop: true
 });
 
 FBInstant.initializeAsync()
   .then(function() {
-    FBInstant.setLoadingProgress(50);
     window.gameSound.once("load", function() {
       window.gameSound.play();
-      FBInstant.setLoadingProgress(100);
-      FBInstant.startGameAsync().then(function() {
-        ReactDOM.render(
-          <Provider store={store}>
-            <CustomRouter />
-          </Provider>,
-          document.getElementById("root")
-        );
-      });
+    });
+    FBInstant.setLoadingProgress(100);
+    FBInstant.startGameAsync().then(function() {
+      ReactDOM.render(
+        <Provider store={store}>
+          <CustomRouter />
+        </Provider>,
+        document.getElementById("root")
+      );
     });
   })
   .catch(function(error) {
@@ -44,7 +42,7 @@ FBInstant.initializeAsync()
 
 class CustomRouter extends React.Component {
   state = {
-    scene: routes.WAITING_FOR_OPONENT,
+    scene: routes.MENU,
     params: { prevScene: false }
   };
 

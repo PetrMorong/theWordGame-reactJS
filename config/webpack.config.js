@@ -316,11 +316,11 @@ module.exports = function(webpackEnv) {
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
             {
-              test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+              test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.mp4$/],
               loader: require.resolve("url-loader"),
               options: {
                 limit: 10000,
-                name: "static/media/[name].[hash:8].[ext]"
+                name: "static/media/[name].[ext]"
               }
             },
             // Process application JS with Babel.
