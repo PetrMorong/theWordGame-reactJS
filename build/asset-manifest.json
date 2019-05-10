@@ -1,14 +1,16 @@
 {
-  "main.js": "/static/js/main.6d8049dd.chunk.js",
-  "main.js.map": "/static/js/main.6d8049dd.chunk.js.map",
-  "static/css/1.66681db0.chunk.css": "/static/css/1.66681db0.chunk.css",
-  "static/js/1.64ad0955.chunk.js": "/static/js/1.64ad0955.chunk.js",
-  "static/js/1.64ad0955.chunk.js.map": "/static/js/1.64ad0955.chunk.js.map",
+  "main.js": "/static/js/main.7a8ed10e.chunk.js",
+  "main.js.map": "/static/js/main.7a8ed10e.chunk.js.map",
+  "static/css/1.ec2f3aa1.chunk.css": "/static/css/1.ec2f3aa1.chunk.css",
+  "static/js/1.a9ee7cd1.chunk.js": "/static/js/1.a9ee7cd1.chunk.js",
+  "static/js/1.a9ee7cd1.chunk.js.map": "/static/js/1.a9ee7cd1.chunk.js.map",
   "runtime~main.js": "/static/js/runtime~main.229c360f.js",
   "runtime~main.js.map": "/static/js/runtime~main.229c360f.js.map",
+  "static/css/1.ec2f3aa1.chunk.css.map": "/static/css/1.ec2f3aa1.chunk.css.map",
+  "static/media/whistleSound.mp4": "/static/media/whistleSound.mp4",
   "static/media/gameSound.mp4": "/static/media/gameSound.mp4",
-  "static/css/1.66681db0.chunk.css.map": "/static/css/1.66681db0.chunk.css.map",
+  "static/media/clapSound.mp4": "/static/media/clapSound.mp4",
   "index.html": "/index.html",
-  "precache-manifest.81176f5964c86cf49c9307f86d899e69.js": "/precache-manifest.81176f5964c86cf49c9307f86d899e69.js",
+  "precache-manifest.97aa095633f6d38297487777b972af37.js": "/precache-manifest.97aa095633f6d38297487777b972af37.js",
   "service-worker.js": "/service-worker.js"
 }

@@ -12,12 +12,14 @@ import WaitingForOponent from "./scenes/waitingForOponent";
 import * as serviceWorker from "./serviceWorker";
 import Reducer from "./redux/reducer";
 
+require("./assets/gameSound.mp4");
+
 const store = createStore(Reducer, applyMiddleware(thunk));
 
 const FBInstant = window.FBInstant;
 
 window.gameSound = new Howl({
-  src: require("./assets/gameSound.mp4"),
+  src: "./static/media/gameSound.mp4",
   loop: true
 });
 

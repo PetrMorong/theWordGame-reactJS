@@ -17,6 +17,10 @@ import {
   countPoints
 } from "../../utils";
 import routes from "../../constants/routes";
+
+require("../../assets/kickSound.mp4");
+require("../../assets/clapSound.mp4");
+
 const initialState = {
   handleFinishWatchingAd: false,
   userWatchedAd: false,
@@ -37,13 +41,11 @@ const initialState = {
 };
 
 window.wordClickedSound = new Howl({
-  src:
-    "https://cdn.fbsbx.com/v/t59.3654-21/50438075_331481827714636_8993766418105237504_n.mp4/audioclip-1550411123-215.mp4?_nc_cat=104&_nc_ht=cdn.fbsbx.com&oh=1053be500529ccc4a27dfe1f47bdc1de&oe=5C6B4C1C&dl=1&fbclid=IwAR0IE_YIY-nygLicOaEdfZIAgGCt1bAYvknW38eDC0tHgPJX-nLGpxGmhgI"
+  src: "./static/media/kickSound.mp4"
 });
 
 window.clapSound = new Howl({
-  src:
-    "https://cdn.fbsbx.com/v/t59.3654-21/50365760_1263697383777609_2587663485978542080_n.mp4/audioclip-1550410849-2056.mp4?_nc_cat=109&_nc_ht=cdn.fbsbx.com&oh=f0983de0f151cad0d39d420e14f949b4&oe=5C6C8C2F&dl=1&fbclid=IwAR1Pgr7xcKFzu-hfyW4xwDKWeCfut3Rkyv22iPvWrhCxuQ_MmZNZY68T4Ww"
+  src: "./static/media/clapSound.mp4"
 });
 
 class LetterChoosing extends Component {

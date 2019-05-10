@@ -5,13 +5,14 @@ import { connect } from "react-redux";
 import * as S from "./styles";
 import { Howl } from "howler";
 
+require("../../assets/whistleSound.mp4");
+
 export const roundTime = 120;
 
 const mapStateToProps = state => state;
 
 window.whistleSound = new Howl({
-  src:
-    "https://cdn.fbsbx.com/v/t59.3654-21/50414610_598338747278678_762637495706845184_n.mp4/audioclip-1550411197-960.mp4?_nc_cat=101&_nc_ht=cdn.fbsbx.com&oh=925c33a3b418c04f4da958f851e30680&oe=5C6B4EFC&dl=1&fbclid=IwAR2TueM7I6-cOoIAf4SZHMkhYikOMoIyuBiBjfQuQJZlB71kBYwaOkF0DCE"
+  src: "./static/media/whistleSound.mp4"
 });
 
 class Timer extends React.Component {
